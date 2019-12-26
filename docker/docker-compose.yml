@@ -6,7 +6,30 @@ services:
     ports:
       - "8080:8080"
 
+  node-exporter:
+    image: prom/node-exporter:v0.18.1
+    container_name: nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+
   monitor:
     build: prometheus/
     ports:
       - "9090:9090"
+    depends_on:
+      - "web"
+      - "node-exporter"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
